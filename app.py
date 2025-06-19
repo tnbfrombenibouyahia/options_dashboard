@@ -3,6 +3,7 @@ import numpy as np
 import pandas as pd
 import plotly.graph_objects as go
 from utils.black_scholes import black_scholes_price
+from scipy.stats import norm
 
 st.set_page_config(page_title="Options Dashboard", layout="wide")
 st.title("📈 Options Analytics Dashboard")
@@ -11,12 +12,14 @@ Explorez l'analyse d'options avec des visualisations interactives :
 - Surface de volatilité implicite
 - Heatmap de prix (Call / Put)
 - Visualiseur de payoff simple
+- Stratégies combinées et Greeks dynamiques
 """)
 
 menu = st.sidebar.radio("📊 Choisir un module :", [
     "🔷 Surface de Volatilité",
     "🌈 Heatmap Prix Call/Put",
     "📊 Visualiseur de Payoff",
+    "♻️ Stratégies Combinées",
     "❓ À propos / Aide"
 ])
 
@@ -61,18 +64,8 @@ elif menu == "🌈 Heatmap Prix Call/Put":
     st.subheader("📉 Prix Put")
     df_put = pd.DataFrame(put_prices, index=np.round(vol_range, 2), columns=np.round(spot_range, 2))
     st.dataframe(df_put)
-    st.download_button(
-        label="📥 Télécharger les prix Call (CSV)",
-        data=df_call.to_csv(index=False),
-        file_name="call_prices.csv",
-        mime="text/csv"
-    )
-    st.download_button(
-        label="📥 Télécharger les prix Put (CSV)",
-        data=df_put.to_csv(index=False),
-        file_name="put_prices.csv",
-        mime="text/csv"
-    )
+    st.download_button("📥 Télécharger les prix Call (CSV)", data=df_call.to_csv(index=False), file_name="call_prices.csv", mime="text/csv")
+    st.download_button("📥 Télécharger les prix Put (CSV)", data=df_put.to_csv(index=False), file_name="put_prices.csv", mime="text/csv")
 
 elif menu == "📊 Visualiseur de Payoff":
     st.header("📊 Visualiseur de Payoff – Call / Put")
@@ -86,6 +79,38 @@ elif menu == "📊 Visualiseur de Payoff":
     fig.update_layout(title="Profil de payoff", xaxis_title="Prix à maturité", yaxis_title="Profit / Perte")
     st.plotly_chart(fig, use_container_width=True)
 
+elif menu == "♻️ Stratégies Combinées":
+    st.header("♻️ Simulateur de stratégies combinées")
+    strategy = st.selectbox("Choisir une stratégie :", ["Straddle", "Strangle", "Bull Call Spread", "Bear Put Spread"])
+    S = st.slider("💰 Spot Price", 50, 150, 100)
+    r = st.slider("🏦 Taux sans risque", 0.0, 0.2, 0.01)
+    T = st.slider("⏳ Maturité (années)", 0.01, 2.0, 1.0)
+    sigma = st.slider("📈 Volatilité implicite", 0.05, 1.0, 0.2)
+    K1 = st.slider("Strike 1", 50, 150, 90)
+    K2 = st.slider("Strike 2 (si applicable)", 50, 150, 110)
+    prices = np.linspace(40, 160, 300)
+
+    def compute_payoff(price):
+        if strategy == "Straddle":
+            return np.maximum(price - K1, 0) + np.maximum(K1 - price, 0) - 2 * black_scholes_price(S, K1, T, r, sigma, 'call')
+        elif strategy == "Strangle":
+            return (np.maximum(price - K2, 0) + np.maximum(K1 - price, 0) -
+                    black_scholes_price(S, K1, T, r, sigma, 'put') -
+                    black_scholes_price(S, K2, T, r, sigma, 'call'))
+        elif strategy == "Bull Call Spread":
+            return np.maximum(price - K1, 0) - np.maximum(price - K2, 0) - \
+                (black_scholes_price(S, K1, T, r, sigma, 'call') - black_scholes_price(S, K2, T, r, sigma, 'call'))
+        elif strategy == "Bear Put Spread":
+            return np.maximum(K2 - price, 0) - np.maximum(K1 - price, 0) - \
+                (black_scholes_price(S, K2, T, r, sigma, 'put') - black_scholes_price(S, K1, T, r, sigma, 'put'))
+        return np.zeros_like(price)
+
+    total_payoff = compute_payoff(prices)
+    fig = go.Figure()
+    fig.add_trace(go.Scatter(x=prices, y=total_payoff, mode='lines', name='Total Payoff'))
+    fig.update_layout(title=f"Payoff de la stratégie : {strategy}", xaxis_title="Prix à maturité", yaxis_title="Profit / Perte")
+    st.plotly_chart(fig, use_container_width=True)
+
 elif menu == "❓ À propos / Aide":
     st.header("❓ À propos de cette application")
     st.markdown("""
@@ -95,6 +120,7 @@ Cette application permet d'explorer le pricing des options avec des outils inter
 - **Surface de volatilité** : Vue 3D des IV selon le moneyness et l'échéance
 - **Heatmap prix d'options** : Affiche les prix Call/Put selon spot & volatilité
 - **Visualiseur de payoff** : Simule le payoff net d'un Call ou Put acheté
+- **Stratégies combinées** : Visualise les profils de gain de stratégies comme le straddle ou le spread
 
 ### ⚙️ Méthode utilisée :
 - Modèle Black-Scholes-Merton pour les options européennes
