@@ -20,7 +20,7 @@ menu = st.sidebar.radio("📊 Choisir un module :", [
     "🌈 Heatmap Prix Call/Put",
     "📊 Visualiseur de Payoff",
     "♻️ Stratégies Combinées",
-    "❓ À propos / Aide"
+    "📋 À propos / Aide"
 ])
 
 if menu == "🔷 Surface de Volatilité":
