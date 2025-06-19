@@ -79,6 +79,7 @@ elif menu == "📊 Visualiseur de Payoff":
     fig.update_layout(title="Profil de payoff", xaxis_title="Prix à maturité", yaxis_title="Profit / Perte")
     st.plotly_chart(fig, use_container_width=True)
 
+# --- MODULE : Stratégies combinées ---
 elif menu == "♻️ Stratégies Combinées":
     st.header("♻️ Simulateur de stratégies combinées")
     strategy = st.selectbox("Choisir une stratégie :", ["Straddle", "Strangle", "Bull Call Spread", "Bear Put Spread"])
