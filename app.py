@@ -20,8 +20,69 @@ menu = st.sidebar.radio("📊 Choisir un module :", [
     "🌈 Heatmap Prix Call/Put",
     "📊 Visualiseur de Payoff",
     "♻️ Stratégies Combinées",
-    "📋 À propos / Aide"
+    "📐 Greeks – Valeurs et Heatmap",
+    "❓ À propos / Aide"
 ])
+
+# Ajout des fonctions Greeks
+
+def black_scholes_greeks(S, K, T, r, sigma, option_type="call"):
+    d1 = (np.log(S / K) + (r + 0.5 * sigma**2) * T) / (sigma * np.sqrt(T))
+    d2 = d1 - sigma * np.sqrt(T)
+    delta = norm.cdf(d1) if option_type == "call" else -norm.cdf(-d1)
+    gamma = norm.pdf(d1) / (S * sigma * np.sqrt(T))
+    vega = S * norm.pdf(d1) * np.sqrt(T)
+    theta = (
+        -(S * norm.pdf(d1) * sigma) / (2 * np.sqrt(T))
+        - r * K * np.exp(-r * T) * norm.cdf(d2 if option_type == "call" else -d2)
+    )
+    return delta, gamma, vega / 100, theta / 365
+
+# --- MODULE GREKS ---
+if menu == "📐 Greeks – Valeurs et Heatmap":
+    st.header("📐 Analyse des Greeks : Delta, Gamma, Vega, Theta")
+    sub_mode = st.radio("Choisir le mode d'analyse :", ["Valeurs instantanées", "Heatmap Delta"])
+
+    if sub_mode == "Valeurs instantanées":
+        st.subheader("🧮 Greeks pour une option spécifique")
+        opt_type = st.selectbox("Type d’option", ["call", "put"])
+        S = st.slider("💰 Spot", 50, 150, 100)
+        K = st.slider("🎯 Strike", 50, 150, 100)
+        T = st.slider("⏳ Maturité (années)", 0.01, 2.0, 1.0)
+        r = st.slider("🏦 Taux sans risque", 0.0, 0.2, 0.01)
+        sigma = st.slider("📈 Volatilité", 0.05, 1.0, 0.2)
+
+        delta, gamma, vega, theta = black_scholes_greeks(S, K, T, r, sigma, opt_type)
+
+        st.metric("Delta", f"{delta:.4f}")
+        st.metric("Gamma", f"{gamma:.4f}")
+        st.metric("Vega (pour 1% vol)", f"{vega:.4f}")
+        st.metric("Theta (par jour)", f"{theta:.4f}")
+
+    elif sub_mode == "Heatmap Delta":
+        st.subheader("🌈 Heatmap du Delta (option Call)")
+        K = st.slider("Strike (fixe)", 80, 120, 100)
+        T = st.slider("Maturité (fixe)", 0.01, 2.0, 1.0)
+        r = st.slider("Taux sans risque", 0.0, 0.1, 0.01)
+        spot_range = np.linspace(70, 130, 30)
+        vol_range = np.linspace(0.05, 1.0, 30)
+
+        delta_matrix = np.array([
+            [black_scholes_greeks(S, K, T, r, sigma, "call")[0] for S in spot_range]
+            for sigma in vol_range
+        ])
+
+        df_delta = pd.DataFrame(delta_matrix, index=np.round(vol_range, 2), columns=np.round(spot_range, 2))
+        st.dataframe(df_delta.style.background_gradient(cmap="RdYlGn"))
+        fig = go.Figure(data=go.Heatmap(
+            z=delta_matrix,
+            x=np.round(spot_range, 2),
+            y=np.round(vol_range, 2),
+            colorscale='RdYlGn',
+            colorbar=dict(title='Delta')
+        ))
+        fig.update_layout(title="Heatmap du Delta (option Call)", xaxis_title="Spot", yaxis_title="Volatilité")
+        st.plotly_chart(fig, use_container_width=True)
 
 if menu == "🔷 Surface de Volatilité":
     st.header("🔷 Surface de Volatilité Implicite (exemple)")
