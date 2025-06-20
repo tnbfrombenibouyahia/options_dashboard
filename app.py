@@ -22,6 +22,7 @@ menu = option_menu(
     "📡 Données Réelles (yfinance)",
     "🕵️ À propos / Aide"
 ],
+
     orientation="horizontal"
 )
 
