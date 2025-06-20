@@ -1,0 +1,16 @@
+[theme]
+base = "dark"
+primaryColor = "#FF4B4B"            # Rouge principal pour boutons et éléments actifs
+backgroundColor = "#0E1117"         # Fond principal très sombre (bleu-gris foncé)
+secondaryBackgroundColor = "#161B22" # Conteneurs, cartes, sidebar
+textColor = "#FFFFFF"               # Texte blanc lisible
+font = "sans serif"
+
+[general]
+page_icon = "🧠"
+
+[client]
+showSidebarNavigation = false
+
+[server]
+headless = true
