@@ -313,7 +313,6 @@ $$
 Tu peux maintenant explorer librement les options financières 😉
     """)
 
-st.markdown("---")
 st.markdown("""
 <p style='text-align: center'>
 Développé par Théo Naïm – 
