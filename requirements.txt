@@ -5,3 +5,4 @@ plotly
 scipy
 matplotlib
 yfinance
+streamlit-option-menu
