@@ -41,77 +41,80 @@ if menu == "📡 Données Réelles (yfinance)":
         calls = chain.calls.copy()
         puts = chain.puts.copy()
 
+        # --- TABLEAUX CALLS & PUTS ---
         st.subheader("📈 Options Call disponibles")
         st.dataframe(calls[['contractSymbol', 'strike', 'lastPrice', 'impliedVolatility', 'openInterest']])
 
         st.subheader("📉 Options Put disponibles")
         st.dataframe(puts[['contractSymbol', 'strike', 'lastPrice', 'impliedVolatility', 'openInterest']])
 
-        # --- SMILE CALLS ---
-        st.subheader("📉 Courbe du Smile de Volatilité (IV vs Strike) – Calls")
-        df_smile_calls = calls[['strike', 'impliedVolatility']].dropna().sort_values('strike')
-        fig_smile_calls = go.Figure()
-        fig_smile_calls.add_trace(go.Scatter(
-            x=df_smile_calls['strike'],
-            y=df_smile_calls['impliedVolatility'] * 100,
-            mode='lines+markers',
-            name='IV Call (%)',
-            line=dict(color='orange')
-        ))
-        fig_smile_calls.update_layout(
-            title=f"Smile IV (Calls) – {symbol} ({selected_exp})",
-            xaxis_title="Strike",
-            yaxis_title="Implied Volatility (%)",
-            template="plotly_white"
-        )
-        st.plotly_chart(fig_smile_calls, use_container_width=True)
+        # --- SMILE CALLS + PUTS : ROW 1 ---
+        col1, col2 = st.columns(2)
 
-        # --- SMILE PUTS ---
-        st.subheader("📉 Courbe du Smile de Volatilité (IV vs Strike) – Puts")
-        df_smile_puts = puts[['strike', 'impliedVolatility']].dropna().sort_values('strike')
-        fig_smile_puts = go.Figure()
-        fig_smile_puts.add_trace(go.Scatter(
-            x=df_smile_puts['strike'],
-            y=df_smile_puts['impliedVolatility'] * 100,
-            mode='lines+markers',
-            name='IV Put (%)',
-            line=dict(color='green')
-        ))
-        fig_smile_puts.update_layout(
-            title=f"Smile IV (Puts) – {symbol} ({selected_exp})",
-            xaxis_title="Strike",
-            yaxis_title="Implied Volatility (%)",
-            template="plotly_white"
-        )
-        st.plotly_chart(fig_smile_puts, use_container_width=True)
+        with col1:
+            st.subheader("📉 Smile IV – Calls")
+            df_smile_calls = calls[['strike', 'impliedVolatility']].dropna().sort_values('strike')
+            fig_smile_calls = go.Figure()
+            fig_smile_calls.add_trace(go.Scatter(
+                x=df_smile_calls['strike'],
+                y=df_smile_calls['impliedVolatility'] * 100,
+                mode='lines+markers',
+                name='IV Call (%)',
+                line=dict(color='orange')
+            ))
+            fig_smile_calls.update_layout(
+                xaxis_title="Strike", yaxis_title="Implied Volatility (%)",
+                template="plotly_white", height=400
+            )
+            st.plotly_chart(fig_smile_calls, use_container_width=True)
 
-        # --- COMPARAISON MID PRICE VS BSM ---
-        st.subheader("📊 Comparaison : Prix Marché vs. Prix BSM (Calls)")
-        spot_price = ticker.history(period="1d")['Close'].iloc[-1]
-        r = 0.01  # taux sans risque estimé
-        maturity_years = (pd.to_datetime(selected_exp) - pd.Timestamp.today()).days / 365.0
+        with col2:
+            st.subheader("📉 Smile IV – Puts")
+            df_smile_puts = puts[['strike', 'impliedVolatility']].dropna().sort_values('strike')
+            fig_smile_puts = go.Figure()
+            fig_smile_puts.add_trace(go.Scatter(
+                x=df_smile_puts['strike'],
+                y=df_smile_puts['impliedVolatility'] * 100,
+                mode='lines+markers',
+                name='IV Put (%)',
+                line=dict(color='green')
+            ))
+            fig_smile_puts.update_layout(
+                xaxis_title="Strike", yaxis_title="Implied Volatility (%)",
+                template="plotly_white", height=400
+            )
+            st.plotly_chart(fig_smile_puts, use_container_width=True)
 
-        call_comp = calls[['strike', 'lastPrice', 'impliedVolatility']].dropna().copy()
-        call_comp['BSM'] = call_comp.apply(
-            lambda row: black_scholes_price(spot_price, row['strike'], maturity_years, r, row['impliedVolatility'], 'call'), axis=1
-        )
-        fig_comp = go.Figure()
-        fig_comp.add_trace(go.Scatter(x=call_comp['strike'], y=call_comp['lastPrice'], mode='lines+markers', name='Prix Marché'))
-        fig_comp.add_trace(go.Scatter(x=call_comp['strike'], y=call_comp['BSM'], mode='lines+markers', name='Prix BSM'))
-        fig_comp.update_layout(title="Prix Marché vs. BSM (Calls)", xaxis_title="Strike", yaxis_title="Prix", template="plotly_white")
-        st.plotly_chart(fig_comp, use_container_width=True)
+        # --- COMPARAISON BSM : ROW 2 ---
+        col3, col4 = st.columns(2)
 
-        # --- COMPARAISON MID PRICE VS BSM PUTS ---
-        st.subheader("📊 Comparaison : Prix Marché vs. Prix BSM (Puts)")
-        put_comp = puts[['strike', 'lastPrice', 'impliedVolatility']].dropna().copy()
-        put_comp['BSM'] = put_comp.apply(
-            lambda row: black_scholes_price(spot_price, row['strike'], maturity_years, r, row['impliedVolatility'], 'put'), axis=1
-        )
-        fig_put = go.Figure()
-        fig_put.add_trace(go.Scatter(x=put_comp['strike'], y=put_comp['lastPrice'], mode='lines+markers', name='Prix Marché'))
-        fig_put.add_trace(go.Scatter(x=put_comp['strike'], y=put_comp['BSM'], mode='lines+markers', name='Prix BSM'))
-        fig_put.update_layout(title="Prix Marché vs. BSM (Puts)", xaxis_title="Strike", yaxis_title="Prix", template="plotly_white")
-        st.plotly_chart(fig_put, use_container_width=True)
+        with col3:
+            st.subheader("📊 Prix Marché vs. BSM – Calls")
+            spot_price = ticker.history(period="1d")['Close'].iloc[-1]
+            r = 0.01
+            maturity_years = (pd.to_datetime(selected_exp) - pd.Timestamp.today()).days / 365.0
+
+            call_comp = calls[['strike', 'lastPrice', 'impliedVolatility']].dropna().copy()
+            call_comp['BSM'] = call_comp.apply(
+                lambda row: black_scholes_price(spot_price, row['strike'], maturity_years, r, row['impliedVolatility'], 'call'), axis=1
+            )
+            fig_call = go.Figure()
+            fig_call.add_trace(go.Scatter(x=call_comp['strike'], y=call_comp['lastPrice'], name="Prix Marché", mode='lines+markers'))
+            fig_call.add_trace(go.Scatter(x=call_comp['strike'], y=call_comp['BSM'], name="Prix BSM", mode='lines+markers'))
+            fig_call.update_layout(xaxis_title="Strike", yaxis_title="Prix", template="plotly_white", height=400)
+            st.plotly_chart(fig_call, use_container_width=True)
+
+        with col4:
+            st.subheader("📊 Prix Marché vs. BSM – Puts")
+            put_comp = puts[['strike', 'lastPrice', 'impliedVolatility']].dropna().copy()
+            put_comp['BSM'] = put_comp.apply(
+                lambda row: black_scholes_price(spot_price, row['strike'], maturity_years, r, row['impliedVolatility'], 'put'), axis=1
+            )
+            fig_put = go.Figure()
+            fig_put.add_trace(go.Scatter(x=put_comp['strike'], y=put_comp['lastPrice'], name="Prix Marché", mode='lines+markers'))
+            fig_put.add_trace(go.Scatter(x=put_comp['strike'], y=put_comp['BSM'], name="Prix BSM", mode='lines+markers'))
+            fig_put.update_layout(xaxis_title="Strike", yaxis_title="Prix", template="plotly_white", height=400)
+            st.plotly_chart(fig_put, use_container_width=True)
 
     except Exception as e:
         st.error(f"Erreur lors du chargement des données : {e}")
