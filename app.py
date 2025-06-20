@@ -2,6 +2,7 @@ import streamlit as st
 import numpy as np
 import pandas as pd
 import plotly.graph_objects as go
+import requests
 from utils.black_scholes import black_scholes_price
 from scipy.stats import norm
 
@@ -13,6 +14,7 @@ Explorez l'analyse d'options avec des visualisations interactives :
 - Heatmap de prix (Call / Put)
 - Visualiseur de payoff simple
 - Stratégies combinées et Greeks dynamiques
+- Données réelles via API
 """)
 
 menu = st.sidebar.radio("📊 Choisir un module :", [
@@ -21,8 +23,48 @@ menu = st.sidebar.radio("📊 Choisir un module :", [
     "📊 Visualiseur de Payoff",
     "♻️ Stratégies Combinées",
     "📐 Greeks – Valeurs et Heatmap",
+    "📡 Données Réelles (EODHD)",
     "❓ À propos / Aide"
 ])
+
+# MODULE API – Données réelles via EODHD
+if menu == "📡 Données Réelles (EODHD)":
+    st.header("📡 Données d'Options Réelles via EODHD API")
+
+    st.markdown("""
+Ce module récupère les données en temps réel depuis l'API EODHD pour SPY (ETF S&P 500).
+Tu peux visualiser la chaîne d'options, comparer les prix du marché et le modèle Black-Scholes.
+""")
+
+    api_token = st.secrets["eodhd_api_key"] if "eodhd_api_key" in st.secrets else st.text_input("Clé API EODHD", type="password")
+
+    if api_token:
+        symbol = "SPY.US"
+        response = requests.get(
+            f"https://eodhd.com/api/options/{symbol}?api_token={api_token}&fmt=json"
+        )
+
+        if response.status_code == 200:
+            data = response.json()
+            available_expirations = sorted(data.keys())
+            selected_exp = st.selectbox("Choisir une date d'échéance", available_expirations)
+
+            options_chain = pd.DataFrame(data[selected_exp])
+            calls = options_chain[options_chain['type'] == 'call']
+            puts = options_chain[options_chain['type'] == 'put']
+
+            st.subheader("📈 Options Call disponibles")
+            st.dataframe(calls[['contract_name', 'strike', 'implied_volatility', 'last_trade_price', 'open_interest']])
+
+            st.subheader("📉 Options Put disponibles")
+            st.dataframe(puts[['contract_name', 'strike', 'implied_volatility', 'last_trade_price', 'open_interest']])
+
+            st.success("✅ Données récupérées avec succès !")
+        else:
+            st.error(f"Erreur {response.status_code} – Impossible de charger les données.")
+    else:
+        st.warning("Veuillez renseigner votre clé API EODHD dans les secrets Streamlit ou ci-dessus.")
+
 
 # Ajout des fonctions Greeks
 
