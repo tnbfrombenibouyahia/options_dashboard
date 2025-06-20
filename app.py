@@ -14,15 +14,14 @@ st.title("📈 Options Analytics Dashboard")
 menu = option_menu(
     menu_title=None,
     options = [
-    "🔷 Surface de Volatilité",
-    "🌈 Heatmap Prix Call/Put",
-    "📊 Visualiseur de Payoff",
-    "♻️ Stratégies Combinées",
-    "📐 Greeks – Valeurs et Heatmap",
+    "💥 Surface de Volatilité",
+    "🌡️ Heatmap Prix Call/Put",
+    "👁️ Visualiseur de Payoff",
+    "🤹‍♂️ Stratégies Combinées",
+    "🧮 Greeks – Valeurs et Heatmap",
     "📡 Données Réelles (yfinance)",
-    "❓ À propos / Aide"
+    "🕵️ À propos / Aide"
 ],
-    icons=["graph-up", "grid-3x3", "bar-chart", "shuffle", "calculator", "broadcast", "info-circle"],
     orientation="horizontal"
 )
 
