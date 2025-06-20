@@ -12,21 +12,20 @@ st.title("📈 Options Analytics Dashboard")
 
 menu = option_menu(
     menu_title=None,
-    options = ["surface", "heatmap", "payoff", "strategies", "greeks", "data", "about"],
-    names = [
+    options = [
         "💥 Surface de Volatilité",
         "🌡️ Heatmap Prix Call/Put",
         "👁️ Visualiseur de Payoff",
         "🤹‍♂️ Stratégies Combinées",
         "🧮 Greeks – Valeurs et Heatmap",
         "🛰 Données Réelles (yfinance)",
-        "🕵️ À propos / Aide"
+        "🕵️ À propos"
     ],
     orientation="horizontal"
 )
 
-if menu == "📡 Données Réelles (yfinance)":
-    st.header("📡 Données d'Options Réelles via yfinance")
+if menu == "🛰 Données Réelles (yfinance)":
+    st.header("Données d'Options Réelles via yfinance")
 
     symbol = st.text_input("Ticker (ex: SPY, AAPL)", value="SPY")
     ticker = yf.Ticker(symbol)
@@ -136,8 +135,8 @@ def black_scholes_greeks(S, K, T, r, sigma, option_type="call"):
     return delta, gamma, vega / 100, theta / 365
 
 # --- MODULE GREKS ---
-if menu == "📐 Greeks – Valeurs et Heatmap":
-    st.header("📐 Analyse des Greeks : Delta, Gamma, Vega, Theta")
+if menu == "🧮 Greeks – Valeurs et Heatmap":
+    st.header("Analyse des Greeks : Delta, Gamma, Vega, Theta")
     sub_mode = st.radio("Choisir le mode d'analyse :", ["Valeurs instantanées", "Heatmap Delta"])
 
     if sub_mode == "Valeurs instantanées":
@@ -181,8 +180,8 @@ if menu == "📐 Greeks – Valeurs et Heatmap":
         fig.update_layout(title="Heatmap du Delta (option Call)", xaxis_title="Spot", yaxis_title="Volatilité")
         st.plotly_chart(fig, use_container_width=True)
 
-if menu == "🔷 Surface de Volatilité":
-    st.header("🔷 Surface de Volatilité Implicite (exemple)")
+if menu == "💥 Surface de Volatilité":
+    st.header("Surface de Volatilité Implicite (exemple)")
     spot = st.number_input("💰 Spot Price", 50.0, 500.0, 100.0)
     maturities = np.linspace(0.05, 2, 20)
     moneyness = np.linspace(0.8, 1.2, 30)
@@ -201,8 +200,8 @@ if menu == "🔷 Surface de Volatilité":
     )
     st.plotly_chart(fig, use_container_width=True)
 
-elif menu == "🌈 Heatmap Prix Call/Put":
-    st.header("🌈 Heatmap des Prix d’Options Black-Scholes")
+elif menu == "🌡️ Heatmap Prix Call/Put":
+    st.header(" Heatmap des Prix d’Options Black-Scholes")
     strike = st.number_input("🎯 Strike", 10.0, 500.0, 100.0)
     T = st.slider("⏳ Maturité (années)", 0.01, 2.0, 1.0)
     r = st.slider("🏦 Taux sans risque", 0.0, 0.2, 0.01)
@@ -225,8 +224,8 @@ elif menu == "🌈 Heatmap Prix Call/Put":
     st.download_button("📥 Télécharger les prix Call (CSV)", data=df_call.to_csv(index=False), file_name="call_prices.csv", mime="text/csv")
     st.download_button("📥 Télécharger les prix Put (CSV)", data=df_put.to_csv(index=False), file_name="put_prices.csv", mime="text/csv")
 
-elif menu == "📊 Visualiseur de Payoff":
-    st.header("📊 Visualiseur de Payoff – Call / Put")
+elif menu == "👁️ Visualiseur de Payoff":
+    st.header("Visualiseur de Payoff – Call / Put")
     option_type = st.selectbox("Type d’option", ["Call", "Put"])
     K = st.slider("🎯 Strike", 50, 150, 100)
     premium = st.slider("💸 Prime (prix payé)", 0.0, 50.0, 10.0)
@@ -238,8 +237,8 @@ elif menu == "📊 Visualiseur de Payoff":
     st.plotly_chart(fig, use_container_width=True)
 
 # --- MODULE : Stratégies combinées ---
-elif menu == "♻️ Stratégies Combinées":
-    st.header("♻️ Simulateur de stratégies combinées")
+elif menu == "🤹‍♂️ Stratégies Combinées":
+    st.header("Simulateur de stratégies combinées")
     strategy = st.selectbox("Choisir une stratégie :", ["Straddle", "Strangle", "Bull Call Spread", "Bear Put Spread"])
     S = st.slider("💰 Spot Price", 50, 150, 100)
     r = st.slider("🏦 Taux sans risque", 0.0, 0.2, 0.01)
@@ -270,8 +269,8 @@ elif menu == "♻️ Stratégies Combinées":
     fig.update_layout(title=f"Payoff de la stratégie : {strategy}", xaxis_title="Prix à maturité", yaxis_title="Profit / Perte")
     st.plotly_chart(fig, use_container_width=True)
 
-elif menu == "❓ À propos / Aide":
-    st.header("❓ À propos de cette application")
+elif menu == "🕵️ À propos":
+    st.header("À propos de cette application")
     st.markdown("""
 Cette application permet d'explorer le pricing des options avec des outils interactifs pédagogiques :
 
