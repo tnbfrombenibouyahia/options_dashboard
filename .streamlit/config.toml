@@ -1,9 +1,9 @@
 [theme]
 base = "dark"
-primaryColor = "#FF4B4B"            # Rouge principal pour boutons et éléments actifs
-backgroundColor = "#0E1117"         # Fond principal très sombre (bleu-gris foncé)
-secondaryBackgroundColor = "#161B22" # Conteneurs, cartes, sidebar
-textColor = "#FFFFFF"               # Texte blanc lisible
+primaryColor = "#FFB000"                     # Orange finance pro
+backgroundColor = "#0B0B0B"                  # Noir profond
+secondaryBackgroundColor = "#1E1E1E"         # Gris foncé pour les cards
+textColor = "#F5F5F5"                        # Blanc cassé
 font = "sans serif"
 
 [general]
