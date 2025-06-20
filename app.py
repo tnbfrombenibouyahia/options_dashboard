@@ -9,14 +9,7 @@ from streamlit_option_menu import option_menu
 
 st.set_page_config(page_title="Options Dashboard", layout="wide")
 st.title("📈 Options Analytics Dashboard")
-st.markdown("""
-Explorez l'analyse d'options avec des visualisations interactives :
-- Surface de volatilité implicite
-- Heatmap de prix (Call / Put)
-- Visualiseur de payoff simple
-- Stratégies combinées et Greeks dynamiques
-- Données réelles via yfinance
-""")
+
 
 menu = option_menu(
     menu_title=None,
