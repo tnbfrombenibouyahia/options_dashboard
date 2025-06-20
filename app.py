@@ -5,6 +5,7 @@ import plotly.graph_objects as go
 import yfinance as yf
 from utils.black_scholes import black_scholes_price
 from scipy.stats import norm
+from streamlit_option_menu import option_menu
 
 st.set_page_config(page_title="Options Dashboard", layout="wide")
 st.title("📈 Options Analytics Dashboard")
@@ -17,7 +18,9 @@ Explorez l'analyse d'options avec des visualisations interactives :
 - Données réelles via yfinance
 """)
 
-menu = st.sidebar.radio("📊 Choisir un module :", [
+menu = option_menu(
+    menu_title=None,
+    options = [
     "🔷 Surface de Volatilité",
     "🌈 Heatmap Prix Call/Put",
     "📊 Visualiseur de Payoff",
@@ -25,7 +28,10 @@ menu = st.sidebar.radio("📊 Choisir un module :", [
     "📐 Greeks – Valeurs et Heatmap",
     "📡 Données Réelles (yfinance)",
     "❓ À propos / Aide"
-])
+],
+    icons=["graph-up", "grid-3x3", "bar-chart", "shuffle", "calculator", "broadcast", "info-circle"],
+    orientation="horizontal"
+)
 
 if menu == "📡 Données Réelles (yfinance)":
     st.header("📡 Données d'Options Réelles via yfinance")
@@ -308,4 +314,10 @@ Tu peux maintenant explorer librement les options financières 😉
     """)
 
 st.markdown("---")
-st.caption("Développé par Théo – Projet pédagogique options 🧠")
+st.markdown("""
+<p style='text-align: center'>
+Développé par Théo Naïm – 
+<a href="https://github.com/tnbfrombenibouyahia" target="_blank">GitHub</a> | 
+<a href="https://www.linkedin.com/in/th%C3%A9o-na%C3%AFm-benhellal-56bb6218a/" target="_blank">LinkedIn</a>
+</p>
+""", unsafe_allow_html=True)
