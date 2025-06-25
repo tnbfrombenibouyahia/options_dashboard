@@ -1,0 +1,20 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg
+*.egg-info/
+*.pyo
+
+# Streamlit secrets
+.streamlit/secrets.toml
+
+# Environnements virtuels
+.venv/
+env/
+venv/
+
+# VSCode
+.vscode/
+
+# MacOS
+.DS_Store
